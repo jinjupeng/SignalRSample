@@ -10,16 +10,24 @@
     <script src="Scripts/jquery.signalR-2.2.1.js"></script>
     <script src="signalr/hubs"></script>
     <script>
+        /*客户端代码连接到SignalR集线器，调用Send方法，并添加一个处理程序来接收BroadcastMessage方法*/
         $(function () {
-            var chat = $.connection.chatHub;
+            //返回集线器代理来调用ChatHub类的方法。
+            var chat = $.connection.chatHub;//chat是一个变量，定义为使用这个变量，而不是访问$.connection.chatHub
 
+            /*通过把一个函数赋予chat.client.broadcastMessage，就定义了服务器端集线器代码调用BroadcastMessage时调用的函数。
+            BroadcastMessage方法为名称和消息传递两个字符串参数，所以所声明的函数匹配相同的参数。
+            */
             chat.client.broadcastMessage = function (name, message) {
+                //参数值被添加到列表项元素中的无序列表项。
                 var encodedName = $('<div />').text(name).html();
                 var encodedMessage = $('<div />').text(message).html();
                 $('#messages').append('<li>' + encodedName + ':&nbsp;&nbsp;' + encodedMessage + '</li>');
             };
 
+            //定义BroadcastMessage调用的实现代码后，用$.connection.hub.start()启动连接，以连接服务器。连接启动完成后，就调用分配给done函数的函数。
             $.connection.hub.start().done(function () {
+                //这里定义了sendmessage按钮的单击处理程序，使用chat.server.send把一条消息发送到服务器，传递两个字符串值。
                 $('#sendmessage').click(function () {
                     chat.server.send($('#name').val(), $('#message').val());
                     $('#message').val('');
@@ -34,6 +42,7 @@
     输入信息：<input type="text" id="message" />
     <button type="button" id="sendmessage">Send</button>
     <br />
+    <!-- 无序列表显示所有接收到的消息-->
     <ul id="messages">
     </ul>
 </body>
